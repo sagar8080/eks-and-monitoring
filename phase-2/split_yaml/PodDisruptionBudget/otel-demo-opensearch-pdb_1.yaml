@@ -1,0 +1,15 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app.kubernetes.io/component: otel-demo-opensearch
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: 2.18.0
+  name: otel-demo-opensearch-pdb
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: opentelemetry-demo
+      app.kubernetes.io/name: opensearch

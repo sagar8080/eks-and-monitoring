@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    majorVersion: '2'
+  labels:
+    app.kubernetes.io/component: otel-demo-opensearch
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: 2.18.0
+  name: otel-demo-opensearch
+spec:
+  podManagementPolicy: Parallel
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: opentelemetry-demo
+      app.kubernetes.io/name: opensearch
+  serviceName: otel-demo-opensearch-headless
+  template:
+    metadata:
+      annotations:
+        configchecksum: e8c450687c20323f6f710672deb70783c1872772b09c7e40d93ae72e602bec3
+      labels:
+        app.kubernetes.io/component: otel-demo-opensearch
+        app.kubernetes.io/instance: opentelemetry-demo
+        app.kubernetes.io/name: opensearch
+        app.kubernetes.io/version: 2.18.0
+      name: otel-demo-opensearch
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/instance
+                  operator: In
+                  values:
+                  - opentelemetry-demo
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - opensearch
+              topologyKey: kubernetes.io/hostname
+            weight: 1
+      automountServiceAccountToken: false
+      containers:
+      - env:
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: discovery.seed_hosts
+          value: opensearch-cluster-master-headless
+        - name: cluster.name
+          value: demo-cluster
+        - name: network.host
+          value: 0.0.0.0
+        - name: OPENSEARCH_JAVA_OPTS
+          value: -Xms300m -Xmx300m
+        - name: node.roles
+          value: master,ingest,data,remote_cluster_client,
+        - name: discovery.type
+          value: single-node
+        - name: bootstrap.memory_lock
+          value: 'true'
+        - name: DISABLE_INSTALL_DEMO_CONFIG
+          value: 'true'
+        - name: DISABLE_SECURITY_PLUGIN
+          value: 'true'
+        image: opensearchproject/opensearch:2.18.0
+        imagePullPolicy: IfNotPresent
+        name: opensearch
+        ports:
+        - containerPort: 9200
+          name: http
+        - containerPort: 9300
+          name: transport
+        - containerPort: 9600
+          name: metrics
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          tcpSocket:
+            port: 9200
+          timeoutSeconds: 3
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 1000m
+            memory: 100Mi
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1000
+        startupProbe:
+          failureThreshold: 30
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          tcpSocket:
+            port: 9200
+          timeoutSeconds: 3
+        volumeMounts:
+        - mountPath: /usr/share/opensearch/config/opensearch.yml
+          name: config-emptydir
+          subPath: opensearch.yml
+      enableServiceLinks: true
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - '#!/usr/bin/env bash
+
+          cp -r /tmp/configfolder/*  /tmp/config/
+
+          '
+        image: opensearchproject/opensearch:2.18.0
+        imagePullPolicy: IfNotPresent
+        name: configfile
+        resources: {}
+        volumeMounts:
+        - mountPath: /tmp/config/
+          name: config-emptydir
+        - mountPath: /tmp/configfolder/opensearch.yml
+          name: config
+          subPath: opensearch.yml
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+      terminationGracePeriodSeconds: 120
+      volumes:
+      - configMap:
+          name: otel-demo-opensearch-config
+        name: config
+      - emptyDir: {}
+        name: config-emptydir
+  updateStrategy:
+    type: RollingUpdate

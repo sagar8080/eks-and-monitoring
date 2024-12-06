@@ -1,0 +1,50 @@
+apiVersion: v1
+data:
+  demo.flagd.json: "{\n  \"$schema\": \"https://flagd.dev/schema/v0/flags.json\",\n\
+    \  \"flags\": {\n    \"productCatalogFailure\": {\n      \"description\": \"Fail\
+    \ product catalog service on a specific product\",\n      \"state\": \"ENABLED\"\
+    ,\n      \"variants\": {\n        \"on\": true,\n        \"off\": false\n    \
+    \  },\n      \"defaultVariant\": \"off\"\n    },\n    \"recommendationServiceCacheFailure\"\
+    : {\n      \"description\": \"Fail recommendation service cache\",\n      \"state\"\
+    : \"ENABLED\",\n      \"variants\": {\n        \"on\": true,\n        \"off\"\
+    : false\n      },\n      \"defaultVariant\": \"off\"\n    },\n    \"adServiceManualGc\"\
+    : {\n      \"description\": \"Triggers full manual garbage collections in the\
+    \ ad service\",\n      \"state\": \"ENABLED\",\n      \"variants\": {\n      \
+    \  \"on\": true,\n        \"off\": false\n      },\n      \"defaultVariant\":\
+    \ \"off\"\n    },\n    \"adServiceHighCpu\": {\n      \"description\": \"Triggers\
+    \ high cpu load in the ad service\",\n      \"state\": \"ENABLED\",\n      \"\
+    variants\": {\n        \"on\": true,\n        \"off\": false\n      },\n     \
+    \ \"defaultVariant\": \"off\"\n    },\n    \"adServiceFailure\": {\n      \"description\"\
+    : \"Fail ad service\",\n      \"state\": \"ENABLED\",\n      \"variants\": {\n\
+    \        \"on\": true,\n        \"off\": false\n      },\n      \"defaultVariant\"\
+    : \"off\"\n    },\n    \"kafkaQueueProblems\": {\n      \"description\": \"Overloads\
+    \ Kafka queue while simultaneously introducing a consumer side delay leading to\
+    \ a lag spike\",\n      \"state\": \"ENABLED\",\n      \"variants\": {\n     \
+    \   \"on\": 100,\n        \"off\": 0\n      },\n      \"defaultVariant\": \"off\"\
+    \n    },\n    \"cartServiceFailure\": {\n      \"description\": \"Fail cart service\"\
+    ,\n      \"state\": \"ENABLED\",\n      \"variants\": {\n        \"on\": true,\n\
+    \        \"off\": false\n      },\n      \"defaultVariant\": \"off\"\n    },\n\
+    \    \"paymentServiceFailure\": {\n      \"description\": \"Fail payment service\
+    \ charge requests\",\n      \"state\": \"ENABLED\",\n      \"variants\": {\n \
+    \       \"on\": true,\n        \"off\": false\n      },\n      \"defaultVariant\"\
+    : \"off\"\n    },\n    \"paymentServiceUnreachable\": {\n      \"description\"\
+    : \"Payment service is unavailable\",\n      \"state\": \"ENABLED\",\n      \"\
+    variants\": {\n        \"on\": true,\n        \"off\": false\n      },\n     \
+    \ \"defaultVariant\": \"off\"\n    },\n    \"loadgeneratorFloodHomepage\": {\n\
+    \      \"description\": \"Flood the frontend with a large amount of requests.\"\
+    ,\n      \"state\": \"ENABLED\",\n      \"variants\": {\n        \"on\": 100,\n\
+    \        \"off\": 0\n      },\n      \"defaultVariant\": \"off\"\n    },\n   \
+    \ \"imageSlowLoad\": {\n      \"description\": \"slow loading images in the frontend\"\
+    ,\n      \"state\": \"ENABLED\",\n      \"variants\": {\n        \"10sec\": 10000,\n\
+    \        \"5sec\": 5000,\n        \"off\": 0\n      },\n      \"defaultVariant\"\
+    : \"off\"\n    }\n  }\n}\n"
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/name: opentelemetry-demo
+    app.kubernetes.io/part-of: opentelemetry-demo
+    app.kubernetes.io/version: 1.12.0
+    opentelemetry.io/name: opentelemetry-demo
+  name: opentelemetry-demo-flagd-config
+  namespace: otel-demo

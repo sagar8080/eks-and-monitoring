@@ -1,0 +1,34 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/name: otelcol
+    app.kubernetes.io/version: 0.113.0
+  name: opentelemetry-demo-otelcol
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  - namespaces
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - apps
+  resources:
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch

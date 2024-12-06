@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/name: otelcol
+    app.kubernetes.io/version: 0.113.0
+    component: standalone-collector
+  name: opentelemetry-demo-otelcol
+  namespace: otel-demo
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: jaeger-compact
+    port: 6831
+    protocol: UDP
+    targetPort: 6831
+  - name: jaeger-grpc
+    port: 14250
+    protocol: TCP
+    targetPort: 14250
+  - name: jaeger-thrift
+    port: 14268
+    protocol: TCP
+    targetPort: 14268
+  - name: metrics
+    port: 8888
+    protocol: TCP
+    targetPort: 8888
+  - appProtocol: grpc
+    name: otlp
+    port: 4317
+    protocol: TCP
+    targetPort: 4317
+  - name: otlp-http
+    port: 4318
+    protocol: TCP
+    targetPort: 4318
+  - name: prometheus
+    port: 9464
+    protocol: TCP
+    targetPort: 9464
+  - name: zipkin
+    port: 9411
+    protocol: TCP
+    targetPort: 9411
+  selector:
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/name: otelcol
+    component: standalone-collector
+  type: ClusterIP

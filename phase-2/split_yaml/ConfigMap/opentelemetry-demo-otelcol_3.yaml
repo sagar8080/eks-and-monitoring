@@ -1,0 +1,49 @@
+apiVersion: v1
+data:
+  relay: "connectors:\n  spanmetrics: {}\nexporters:\n  debug: {}\n  opensearch:\n\
+    \    http:\n      endpoint: http://otel-demo-opensearch:9200\n      tls:\n   \
+    \     insecure: true\n    logs_index: otel\n  otlp:\n    endpoint: 'opentelemetry-demo-jaeger-collector:4317'\n\
+    \    tls:\n      insecure: true\n  otlphttp/prometheus:\n    endpoint: http://opentelemetry-demo-prometheus-server:9090/api/v1/otlp\n\
+    \    tls:\n      insecure: true\nextensions:\n  health_check:\n    endpoint: ${env:MY_POD_IP}:13133\n\
+    processors:\n  batch: {}\n  k8sattributes:\n    extract:\n      metadata:\n  \
+    \    - k8s.namespace.name\n      - k8s.deployment.name\n      - k8s.statefulset.name\n\
+    \      - k8s.daemonset.name\n      - k8s.cronjob.name\n      - k8s.job.name\n\
+    \      - k8s.node.name\n      - k8s.pod.name\n      - k8s.pod.uid\n      - k8s.pod.start_time\n\
+    \    passthrough: false\n    pod_association:\n    - sources:\n      - from: resource_attribute\n\
+    \        name: k8s.pod.ip\n    - sources:\n      - from: resource_attribute\n\
+    \        name: k8s.pod.uid\n    - sources:\n      - from: connection\n  memory_limiter:\n\
+    \    check_interval: 5s\n    limit_percentage: 80\n    spike_limit_percentage:\
+    \ 25\n  resource:\n    attributes:\n    - action: insert\n      from_attribute:\
+    \ k8s.pod.uid\n      key: service.instance.id\n  transform:\n    error_mode: ignore\n\
+    \    trace_statements:\n    - context: span\n      statements:\n      - replace_pattern(name,\
+    \ \"\\\\?.*\", \"\")\n      - replace_match(name, \"GET /api/products/*\", \"\
+    GET /api/products/{productId}\")\nreceivers:\n  httpcheck/frontendproxy:\n   \
+    \ targets:\n    - endpoint: http://opentelemetry-demo-frontendproxy:8080\n  jaeger:\n\
+    \    protocols:\n      grpc:\n        endpoint: ${env:MY_POD_IP}:14250\n     \
+    \ thrift_compact:\n        endpoint: ${env:MY_POD_IP}:6831\n      thrift_http:\n\
+    \        endpoint: ${env:MY_POD_IP}:14268\n  otlp:\n    protocols:\n      grpc:\n\
+    \        endpoint: ${env:MY_POD_IP}:4317\n      http:\n        cors:\n       \
+    \   allowed_origins:\n          - http://*\n          - https://*\n        endpoint:\
+    \ ${env:MY_POD_IP}:4318\n  prometheus:\n    config:\n      scrape_configs:\n \
+    \     - job_name: opentelemetry-collector\n        scrape_interval: 10s\n    \
+    \    static_configs:\n        - targets:\n          - ${env:MY_POD_IP}:8888\n\
+    \  redis:\n    collection_interval: 10s\n    endpoint: valkey-cart:6379\n  zipkin:\n\
+    \    endpoint: ${env:MY_POD_IP}:9411\nservice:\n  extensions:\n  - health_check\n\
+    \  pipelines:\n    logs:\n      exporters:\n      - opensearch\n      - debug\n\
+    \      processors:\n      - k8sattributes\n      - memory_limiter\n      - resource\n\
+    \      - batch\n      receivers:\n      - otlp\n    metrics:\n      exporters:\n\
+    \      - otlphttp/prometheus\n      - debug\n      processors:\n      - k8sattributes\n\
+    \      - memory_limiter\n      - resource\n      - batch\n      receivers:\n \
+    \     - httpcheck/frontendproxy\n      - redis\n      - otlp\n      - spanmetrics\n\
+    \    traces:\n      exporters:\n      - otlp\n      - debug\n      - spanmetrics\n\
+    \      processors:\n      - k8sattributes\n      - memory_limiter\n      - resource\n\
+    \      - transform\n      - batch\n      receivers:\n      - otlp\n      - jaeger\n\
+    \      - zipkin\n  telemetry:\n    metrics:\n      address: ${env:MY_POD_IP}:8888\n"
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/name: otelcol
+    app.kubernetes.io/version: 0.113.0
+  name: opentelemetry-demo-otelcol
+  namespace: otel-demo
