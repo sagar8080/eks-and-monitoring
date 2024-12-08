@@ -1,0 +1,30 @@
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: pod-restart-alerts
+        rules:
+          - alert: HighPodRestartCount
+            expr: sum(kube_pod_container_status_restarts_total) by (pod, namespace) > 5
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Pod restart count is high"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted {{ $value }} times in the last minute."
+
+alertmanager:
+  enabled: true
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: sns
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 10m
+    receivers:
+      - name: sns
+        webhook_configs:
+          - url: "https://035q5jexj5.execute-api.us-east-1.amazonaws.com/prod"
+            send_resolved: true
