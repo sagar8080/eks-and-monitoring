@@ -1,0 +1,17 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+name: Integration Tests
+
+on:
+  workflow_call:
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    name: "Run CI"
+    steps:
+      - name: check out code
+        uses: actions/checkout@v4
+      - name: run tracetesting
+        run: |
+          make build && docker system prune -f && make run-tracetesting
