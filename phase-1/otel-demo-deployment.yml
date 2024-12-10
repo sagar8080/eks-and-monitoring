@@ -151,6 +151,7 @@ Resources:
   DockerInstance:
     Type: AWS::EC2::Instance
     Properties:
+      KeyName: securekey
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref SSMInstanceProfile
       SubnetId: !Ref PublicSubnet1
@@ -163,26 +164,27 @@ Resources:
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
-            VolumeSize: 16
+            VolumeSize: 32
             VolumeType: gp2
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          yum update -y
-          amazon-linux-extras install docker -y
-          service docker start
-          usermod -aG docker ec2-user
-          curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-          chmod +x /usr/local/bin/docker-compose
-          yum install git -y
-          git clone https://github.com/open-telemetry/opentelemetry-demo.git
-          cd opentelemetry-demo
-          docker-compose up -d
+      # UserData:
+      #   Fn::Base64: !Sub |
+      #     #!/bin/bash
+      #     yum update -y
+      #     amazon-linux-extras install docker -y
+      #     service docker start
+      #     usermod -aG docker ec2-user
+      #     curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+      #     chmod +x /usr/local/bin/docker-compose
+      #     yum install git -y
+      #     git clone https://github.com/open-telemetry/opentelemetry-demo.git
+      #     cd opentelemetry-demo
+      #     docker-compose up -d
 
   # EC2 Instance for EKS Client
   EKSClientInstance:
     Type: AWS::EC2::Instance
     Properties:
+      KeyName: securekey
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref SSMInstanceProfile
       SubnetId: !Ref PublicSubnet2
@@ -192,18 +194,23 @@ Resources:
       Tags:
         - Key: Name
           Value: EKSClientInstance
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          yum update -y
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          ./aws/install
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x ./kubectl
-          mv ./kubectl /usr/local/bin/kubectl
-          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
-          mv /tmp/eksctl /usr/local/bin/eksctl
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 32
+            VolumeType: gp2
+      # UserData:
+      #   Fn::Base64: !Sub |
+      #     #!/bin/bash
+      #     yum update -y
+      #     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      #     unzip awscliv2.zip
+      #     ./aws/install
+      #     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      #     chmod +x ./kubectl
+      #     mv ./kubectl /usr/local/bin/kubectl
+      #     curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
+      #     mv /tmp/eksctl /usr/local/bin/eksctl
 
   # EKS Cluster
   EKSClusterRole:
