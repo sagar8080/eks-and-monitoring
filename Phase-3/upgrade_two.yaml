@@ -1,0 +1,4 @@
+components:
+  cartService:
+    imageOverride:
+      tag: invalid-tag
