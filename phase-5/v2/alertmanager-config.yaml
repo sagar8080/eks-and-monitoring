@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+spec:
+  route:
+    receiver: sns
+    groupBy: ['alertname']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 10m
+  receivers:
+    - name: sns
+      webhookConfigs:
+        - url: "https://035q5jexj5.execute-api.us-east-1.amazonaws.com/prod"
+          sendResolved: true
