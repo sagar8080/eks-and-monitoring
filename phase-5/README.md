@@ -114,6 +114,65 @@
 
 ---
 
+### **Optimized Deployment Approach**
+After experimenting with Prometheus further and reviewing documentation and online articles, the following simpler solution was identified for deploying the monitoring stack:
+
+#### **1. Deploy Prometheus Without Auxiliary CRDs**
+- Use the following Helm command to install Prometheus without bundled auxiliary CRDs:
+  ```bash
+  helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+  --set defaultRules.create=false -n monitoring
+  ```
+
+#### **2. Configure Custom Alert Rules**
+- Create a `custom-prometheus-alerts.yaml` file containing custom alert rules.
+- Apply the custom alert rules:
+  ```bash
+  kubectl apply -f custom-alert-rules.yaml
+  ```
+
+#### **3. Configure AlertManager**
+- Create an `alertmanager-config.yaml` file to direct alerts to the configured webhook.
+- Apply the AlertManager configuration:
+  ```bash
+  kubectl apply -f alertmanager-config.yaml
+  ```
+
+#### **4. Test Setup**
+- Use the same test pod to simulate a high pod restart count and trigger alerts.
+  ```yaml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: test-pod
+    namespace: default
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: test-pod
+    template:
+      metadata:
+        labels:
+          app: test-pod
+      spec:
+        containers:
+        - name: test-container
+          image: busybox
+          args:
+          - /bin/sh
+          - -c
+          - |
+            echo "This pod will restart every 5 minutes.";
+            sleep 300;
+            exit 1;
+  ```
+  ```bash
+  kubectl apply -f test-pod.yaml
+  ```
+
+---
+
 ### **Cleanup Commands**
 To clean up the Prometheus setup:
 1. Scale down StatefulSets and Deployments:
@@ -133,4 +192,3 @@ To clean up the Prometheus setup:
 4. Delete the EKS cluster:
    ```bash
    eksctl delete cluster --name prometheus-cluster --region us-east-1
-   ```
