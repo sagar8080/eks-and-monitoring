@@ -11,7 +11,15 @@
 #### **1. Set Up an EKS Cluster**
 - Create an EKS cluster using `eksctl`:
   ```bash
-  eksctl create cluster --name prometheus-cluster --region us-east-1 --nodes 2 --node-type t3.medium
+  eksctl create cluster --name prometheus-cluster \
+  --region us-east-1 \
+  --version 1.31 \
+  --nodegroup-name worker-nodes \
+  --node-type m5.large \
+  --nodes 2 \
+  --nodes-min 2  \
+  --nodes-max 3 \
+  --managed 
   ```
 - Verify the cluster setup:
   ```bash
